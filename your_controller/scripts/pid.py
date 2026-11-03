@@ -73,10 +73,11 @@ def transform_to_bebop_frame(pose_msg, target_world_point):
       relative_body  = R_drone.T * relative_world
     """
     # 1. Read the drone position and orientation from pose_msg
-    drone_x = pose_msg.pose.position.x
-    drone_y = pose_msg.pose.position.y
+    pose = pose_msg.pose if hasattr(pose_msg, 'pose') else pose_msg
+    drone_x = pose.position.x
+    drone_y = pose.position.y
 
-    q = pose_msg.pose.orientation
+    q = pose.orientation
     quaternion = [q.x, q.y, q.z, q.w]
     _, _, yaw = transformations.euler_from_quaternion(quaternion)
 
@@ -122,7 +123,7 @@ def pid_controller(error, dt, kp, ki, kd):
     integral = integral
 
     # The D of PID
-    if last_error == np.zeros(2, dtype=float):
+    if np.all(last_error == 0.0):
         derivative = 0.0
     else:
         derivative = (error - last_error) / dt
@@ -143,7 +144,9 @@ def transform_body_velocity_to_world(pose_msg, velocity_body):
       4. Keep only the x and y components for the RViz arrow visualization.
     """
     # 1. Extract orientation quaternion and get yaw
-    q = pose_msg.pose.orientation
+    pose = pose_msg.pose if hasattr(pose_msg, 'pose') else pose_msg
+    q = pose.orientation
+
     quaternion = [q.x, q.y, q.z, q.w]
     _, _, yaw = transformations.euler_from_quaternion(quaternion)
 

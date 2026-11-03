@@ -167,11 +167,12 @@ def transform_to_bebop_frame(pose_msg, target_world_point):
       relative_world = target_world - drone_world
       relative_body  = R_drone.T * [relative_world_x, relative_world_y, 0]
     """
+    pose = pose_msg.pose if hasattr(pose_msg, 'pose') else pose_msg
     # 1. Read the drone position and orientation from pose_msg
-    drone_x = pose_msg.pose.position.x
-    drone_y = pose_msg.pose.position.y
+    drone_x = pose.position.x
+    drone_y = pose.position.y
 
-    q = pose_msg.pose.orientation
+    q = pose.orientation
     quaternion = [q.x, q.y, q.z, q.w]
     _, _, yaw = transformations.euler_from_quaternion(quaternion)
 
@@ -203,8 +204,9 @@ def transform_velocity_to_bebop_frame(pose_msg, velocity_world):
 
     This is the same idea used in the PID task when commands are published to the drone.
     """
+    pose = pose_msg.pose if hasattr(pose_msg, 'pose') else pose_msg
     # 1. Extract orientation quaternion and get yaw
-    q = pose_msg.pose.orientation
+    q = pose.orientation
     quaternion = [q.x, q.y, q.z, q.w]
     _, _, yaw = transformations.euler_from_quaternion(quaternion)
 
@@ -307,7 +309,7 @@ def cbf_controller(current_pos, goal_pos, obstacles, k_att=K_ATT, d_obs=D_OBS, a
             u = np.asarray(v.value, dtype=float).reshape(2)
         else:
             # Fallback if solver fails or problem is infeasible
-            u = v_des.copy()
+            u = np.zeros(2, dtype=float)
     else:
         u = v_des.copy()
 
